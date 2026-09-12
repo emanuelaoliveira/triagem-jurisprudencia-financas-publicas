@@ -1,0 +1,10 @@
+# Arquivos brutos baixados dos órgãos (grandes, não versionar)
+dados/brutos/
+# Banco de dados local (gerado pelos scripts, não versionar)
+dados/db/*.sqlite3
+# Ambiente Python
+.venv/
+__pycache__/
+*.pyc
+# Exportações geradas
+exporta/saida/
