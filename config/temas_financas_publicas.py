@@ -125,3 +125,21 @@ TEMAS: dict[str, list[str]] = {
         r"receita[s]? tribut[aá]ria[s]?",
     ],
 }
+
+# Exceções: padrões que, quando presentes perto de um "match" do tema, indicam
+# falso positivo e cancelam a classificação naquele tema (mas não nos demais).
+#
+# 2026-09-12: a Emanuela pediu para excluir o caso de "subsídio" como regime de
+# remuneração de servidor/agente político (art. 39, §4º da CF) — isso não é
+# "subsídio" no sentido de finanças públicas (subvenção/incentivo econômico)
+# que o Flávio quis dizer.
+EXCLUSOES: dict[str, list[str]] = {
+    "Subsídios e subvenções": [
+        r"subs[ií]dio[s]?\s+(mensal|[uú]nico|remunerat[oó]rio[s]?)",
+        r"remunerad[oa]?[s]?\s+por\s+subs[ií]dio",
+        r"regime de subs[ií]dio",
+        r"subs[ií]dio.{0,60}(servidor|agente pol[ií]tico|cargo|vencimento|remunera[cç][aã]o|remunerat[oó]ri)",
+        r"(servidor|agente pol[ií]tico|cargo|vencimento|remunera[cç][aã]o|remunerat[oó]ri).{0,60}subs[ií]dio",
+        r"art\.?\s*39.{0,15}§\s*4",
+    ],
+}

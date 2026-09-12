@@ -13,7 +13,7 @@ import re
 from dataclasses import dataclass, field
 from functools import lru_cache
 
-from config.temas_financas_publicas import TEMAS
+from config.temas_financas_publicas import EXCLUSOES, TEMAS
 
 
 @lru_cache(maxsize=None)
@@ -21,6 +21,14 @@ def _padroes_compilados() -> dict[str, list[re.Pattern]]:
     return {
         tema: [re.compile(p, re.IGNORECASE) for p in padroes]
         for tema, padroes in TEMAS.items()
+    }
+
+
+@lru_cache(maxsize=None)
+def _exclusoes_compiladas() -> dict[str, list[re.Pattern]]:
+    return {
+        tema: [re.compile(p, re.IGNORECASE) for p in padroes]
+        for tema, padroes in EXCLUSOES.items()
     }
 
 
@@ -40,10 +48,12 @@ def classifica(*textos: str | None) -> ResultadoClassificacao:
     if not texto_completo.strip():
         return ResultadoClassificacao(eh_financas_publicas=False)
 
+    exclusoes = _exclusoes_compiladas()
     temas_encontrados = [
         tema
         for tema, padroes in _padroes_compilados().items()
         if any(p.search(texto_completo) for p in padroes)
+        and not any(p.search(texto_completo) for p in exclusoes.get(tema, []))
     ]
     return ResultadoClassificacao(
         eh_financas_publicas=bool(temas_encontrados),

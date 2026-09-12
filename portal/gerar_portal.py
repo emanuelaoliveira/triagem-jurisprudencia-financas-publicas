@@ -75,6 +75,7 @@ TEMPLATE_HTML = """<!doctype html>
 </style>
 </head>
 <body>
+<script id="dados-portal" type="application/json">__DADOS_JSON__</script>
 <header>
   <h1>Jurisprudência sobre Finanças Públicas</h1>
   <p id="subtitulo">carregando…</p>
@@ -89,9 +90,11 @@ TEMPLATE_HTML = """<!doctype html>
   <div id="lista"></div>
 </main>
 <script>
-async function main() {
-  const resp = await fetch('dados.json');
-  const info = await resp.json();
+function main() {
+  // Os dados vêm embutidos na própria página (não via fetch), para funcionar
+  // ao abrir o arquivo direto com duplo clique — navegadores bloqueiam fetch()
+  // de arquivos locais (file://) por política de segurança (CORS).
+  const info = JSON.parse(document.getElementById('dados-portal').textContent);
   const decisoes = info.decisoes;
 
   document.getElementById('subtitulo').textContent =
@@ -172,10 +175,10 @@ def gerar() -> int:
         "temas": list(TEMAS.keys()),
         "decisoes": decisoes,
     }
-    (PASTA_SITE / "dados.json").write_text(
-        json.dumps(dados, ensure_ascii=False), encoding="utf-8"
-    )
-    (PASTA_SITE / "index.html").write_text(TEMPLATE_HTML, encoding="utf-8")
+    # escapa "</" para o JSON embutido não poder fechar a tag <script> mais cedo
+    dados_json = json.dumps(dados, ensure_ascii=False).replace("</", "<\\/")
+    html = TEMPLATE_HTML.replace("__DADOS_JSON__", dados_json)
+    (PASTA_SITE / "index.html").write_text(html, encoding="utf-8")
     return len(decisoes)
 
 
