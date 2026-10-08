@@ -87,6 +87,15 @@ TEMPLATE_HTML = """<!doctype html>
   .ver-mais { font-size: 12px; color: var(--senado-blue-light); cursor: pointer; background: none; border: none; padding: 4px 0; font-family: var(--font); font-weight: 500; }
   .vazio { text-align: center; color: var(--text3); padding: 40px 0; font-size: 13px; }
 
+  .btn { padding: 9px 22px; border-radius: var(--radius-md); border: 0.5px solid var(--border2); background: transparent; color: var(--text); font-size: 13px; cursor: pointer; font-family: var(--font); font-weight: 500; transition: background 0.15s; }
+  .btn:hover { background: var(--surface2); }
+  .btn-primary { background: var(--senado-blue); color: #fff; border-color: var(--senado-blue); }
+  .btn-primary:hover { background: var(--senado-blue-light); }
+
+  .topo-resultados { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .paginacao { display: flex; justify-content: center; align-items: center; gap: 14px; margin-top: 1rem; font-size: 13px; }
+  .paginacao button:disabled { opacity: 0.35; cursor: not-allowed; }
+
   footer { margin-top: 1rem; font-size: 11px; color: var(--text3); text-align: center; border-top: 1px solid var(--border); padding-top: 1rem; }
   footer strong { color: var(--senado-blue); }
 </style>
@@ -107,19 +116,35 @@ TEMPLATE_HTML = """<!doctype html>
 
 <div class="container">
 
-  <div class="section">
+  <form class="section" id="view-filtros">
     <p class="section-title">Filtrar</p>
     <div class="barra">
-      <input type="search" id="busca" placeholder="Buscar por palavra, relator, número...">
+      <input type="search" id="busca" placeholder="Buscar por palavra, relator...">
+      <input type="text" id="filtroNumero" placeholder="Número (ex: 1502/2026)" style="max-width:220px">
       <select id="filtroOrgao"><option value="">Todos os órgãos</option></select>
       <select id="filtroTema"><option value="">Todos os temas</option></select>
     </div>
-  </div>
+    <div class="barra" style="margin-top:10px">
+      <label style="font-size:12px; color:var(--text2); display:flex; align-items:center; gap:6px">
+        Período: de <input type="date" id="dataDe">
+      </label>
+      <label style="font-size:12px; color:var(--text2); display:flex; align-items:center; gap:6px">
+        até <input type="date" id="dataAte">
+      </label>
+      <button class="ver-mais" id="limparPeriodo" type="button">limpar período</button>
+    </div>
+    <div style="margin-top:1.25rem; text-align:right">
+      <button class="btn btn-primary" type="submit">Buscar decisões</button>
+    </div>
+  </form>
 
-  <div class="section">
-    <p class="section-title">Decisões</p>
-    <div class="contagem" id="contagem"></div>
+  <div class="section" id="view-resultados" style="display:none">
+    <div class="topo-resultados">
+      <button class="ver-mais" id="btnNovoFiltro" type="button">← novo filtro</button>
+      <div class="contagem" id="contagem"></div>
+    </div>
     <div id="lista"></div>
+    <div class="paginacao" id="paginacao"></div>
   </div>
 
   <footer>
@@ -135,6 +160,18 @@ function main() {
   const info = JSON.parse(document.getElementById('dados-portal').textContent);
   const decisoes = info.decisoes;
 
+  // data_sessao vem como "DD/MM/AAAA" (TCU) — converte pra "AAAA-MM-DD" uma
+  // vez só, pra comparar com os campos <input type="date"> (que já usam esse
+  // formato) e pra ordenar/filtrar por período.
+  function paraISO(dataBR) {
+    if (!dataBR) return null;
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(dataBR.trim());
+    if (!m) return null;
+    const [, d, mes, a] = m;
+    return `${a}-${mes}-${d}`;
+  }
+  decisoes.forEach(d => { d._dataISO = paraISO(d.data_sessao); });
+
   document.getElementById('subtitulo').textContent =
     `${decisoes.length} decisões · atualizado em ${info.gerado_em}`;
 
@@ -145,18 +182,54 @@ function main() {
   const selTema = document.getElementById('filtroTema');
   info.temas.forEach(t => selTema.add(new Option(t, t)));
 
+  const PAGINA_TAM = 20;
+  let filtradas = [];
+  let paginaAtual = 1;
+
+  const viewFiltros = document.getElementById('view-filtros');
+  const viewResultados = document.getElementById('view-resultados');
   const lista = document.getElementById('lista');
   const contagem = document.getElementById('contagem');
+  const paginacao = document.getElementById('paginacao');
   const busca = document.getElementById('busca');
+  const filtroNumero = document.getElementById('filtroNumero');
+  const dataDe = document.getElementById('dataDe');
+  const dataAte = document.getElementById('dataAte');
 
-  function renderiza() {
+  document.getElementById('limparPeriodo').addEventListener('click', () => {
+    dataDe.value = ''; dataAte.value = '';
+  });
+
+  // A primeira tela mostra só os filtros; os resultados (com paginação)
+  // só aparecem depois que a pessoa clica em "Buscar decisões".
+  viewFiltros.addEventListener('submit', (e) => {
+    e.preventDefault();
+    aplicarFiltro();
+  });
+
+  document.getElementById('btnNovoFiltro').addEventListener('click', () => {
+    viewResultados.style.display = 'none';
+    viewFiltros.style.display = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  function aplicarFiltro() {
     const termo = busca.value.trim().toLowerCase();
+    const numero = filtroNumero.value.trim().toLowerCase();
     const orgao = selOrgao.value;
     const tema = selTema.value;
+    const de = dataDe.value || null;
+    const ate = dataAte.value || null;
 
-    const filtradas = decisoes.filter(d => {
+    filtradas = decisoes.filter(d => {
       if (orgao && d.orgao !== orgao) return false;
       if (tema && !d.temas.includes(tema)) return false;
+      if (numero) {
+        const alvoNumero = `${d.numero || ''} ${d.ano || ''} ${d.titulo || ''}`.toLowerCase();
+        if (!alvoNumero.includes(numero)) return false;
+      }
+      if (de && (!d._dataISO || d._dataISO < de)) return false;
+      if (ate && (!d._dataISO || d._dataISO > ate)) return false;
       if (termo) {
         const alvo = `${d.titulo} ${d.relator} ${d.ementa} ${d.assunto}`.toLowerCase();
         if (!alvo.includes(termo)) return false;
@@ -164,15 +237,30 @@ function main() {
       return true;
     });
 
+    paginaAtual = 1;
+    viewFiltros.style.display = 'none';
+    viewResultados.style.display = '';
+    renderizaPagina();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function renderizaPagina() {
+    const totalPaginas = Math.max(1, Math.ceil(filtradas.length / PAGINA_TAM));
+    paginaAtual = Math.min(Math.max(1, paginaAtual), totalPaginas);
+
     contagem.textContent = `${filtradas.length} decisão(ões) encontrada(s)`;
     lista.innerHTML = '';
 
     if (filtradas.length === 0) {
       lista.innerHTML = '<div class="vazio">Nenhuma decisão encontrada com esse filtro.</div>';
+      paginacao.innerHTML = '';
       return;
     }
 
-    for (const d of filtradas.slice(0, 300)) {
+    const inicio = (paginaAtual - 1) * PAGINA_TAM;
+    const pagina = filtradas.slice(inicio, inicio + PAGINA_TAM);
+
+    for (const d of pagina) {
       const card = document.createElement('div');
       card.className = 'card';
       const link = d.url ? `<a href="${d.url}" target="_blank" rel="noopener">${d.titulo || d.numero}</a>` : (d.titulo || d.numero);
@@ -190,12 +278,17 @@ function main() {
       });
       lista.appendChild(card);
     }
-  }
 
-  busca.addEventListener('input', renderiza);
-  selOrgao.addEventListener('change', renderiza);
-  selTema.addEventListener('change', renderiza);
-  renderiza();
+    paginacao.innerHTML = `
+      <button class="btn" id="btnAnterior" ${paginaAtual <= 1 ? 'disabled' : ''}>← anterior</button>
+      <span>página ${paginaAtual} de ${totalPaginas}</span>
+      <button class="btn" id="btnProxima" ${paginaAtual >= totalPaginas ? 'disabled' : ''}>próxima →</button>
+    `;
+    const btnAnterior = document.getElementById('btnAnterior');
+    const btnProxima = document.getElementById('btnProxima');
+    if (btnAnterior) btnAnterior.addEventListener('click', () => { paginaAtual--; renderizaPagina(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    if (btnProxima) btnProxima.addEventListener('click', () => { paginaAtual++; renderizaPagina(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  }
 }
 main();
 </script>
