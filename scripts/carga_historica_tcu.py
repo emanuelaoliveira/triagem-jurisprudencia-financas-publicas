@@ -22,9 +22,9 @@ from classificador.classificador import classifica
 from fetchers.tcu import ORGAO, baixar_csv_ano, iterar_acordaos_csv, texto_para_classificar
 
 
-def processa_ano(ano: int) -> tuple[int, int]:
+def processa_ano(ano: int, forcar: bool = False) -> tuple[int, int]:
     print(f"\n== TCU {ano} ==")
-    caminho = baixar_csv_ano(ano)
+    caminho = baixar_csv_ano(ano, forcar=forcar)
     total = 0
     encontrados = 0
     agora = dt.datetime.now().isoformat(timespec="seconds")
