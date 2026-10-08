@@ -1,0 +1,50 @@
+JURISPRUDÊNCIA SOBRE FINANÇAS PÚBLICAS — protótipo inicial
+=============================================================
+
+COMO ABRIR
+----------
+Dê dois cliques no arquivo "index.html" desta pasta. Ele abre no navegador
+(Chrome) e já funciona sozinho — não precisa de internet, não precisa de
+Python, não precisa instalar nada. Os dados já estão dentro do arquivo.
+
+O QUE É
+-------
+Uma triagem automática da jurisprudência do TCU (e, no futuro, também do
+STF) sobre finanças públicas — orçamento, LRF, precatórios, transferências,
+emendas parlamentares, dívida pública, entre outros 20 temas definidos
+com o Flávio.
+
+Nesta versão: 244 decisões do TCU de 2026 (prova de conceito). A carga
+histórica completa (últimos 5–10 anos) ainda será feita.
+
+ONDE A VERSÃO "AO VIVO" FICA
+-----------------------------
+Além desta cópia offline, a ferramenta roda publicada na internet, sempre
+atualizada automaticamente:
+
+  https://emanuelaoliveira.github.io/triagem-jurisprudencia-financas-publicas/
+
+Código-fonte (para a TI, se quiserem ver como foi feito):
+
+  https://github.com/emanuelaoliveira/triagem-jurisprudencia-financas-publicas
+
+COMO FUNCIONA (resumo para a apresentação)
+-------------------------------------------
+1. Um programa busca os acórdãos do TCU direto na base de dados aberta
+   oficial do Tribunal (não depende de nenhum computador ligado).
+2. Cada acórdão é verificado por um filtro de palavras-chave dos 20 temas
+   de finanças públicas combinados com o Flávio.
+3. Só o que é sobre finanças públicas entra na base.
+4. Os resultados viram uma planilha Excel e esta página de consulta, com
+   filtro por órgão, tema, número do processo e período.
+5. A base é atualizada sozinha (TCU: todo dia; STF: toda semana), rodando
+   na nuvem — não depende do computador de ninguém ligado.
+
+PENDÊNCIA EM ABERTO (perguntar ao Flávio)
+-------------------------------------------
+O STF não tem uma forma automática de baixar o texto das decisões (o site
+bloqueia acesso de programas). Hoje contornamos isso com um e-mail oficial
+do STF (STF-Push) que avisa quando sai uma edição nova — mas pegar o
+conteúdo completo de cada edição ainda depende de alguém abrir o link.
+Três caminhos possíveis estão em aberto — ver anotação em
+"limitacoes jurisprudencia STF.docx" no projeto.
