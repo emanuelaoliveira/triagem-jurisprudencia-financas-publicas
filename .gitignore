@@ -1,7 +1,9 @@
 # Arquivos brutos baixados dos órgãos (grandes, não versionar)
 dados/brutos/
-# Banco de dados local (gerado pelos scripts, não versionar)
-dados/db/*.sqlite3
+# Banco de dados local (versionado a partir de 2026-10-08: é o que dá
+# continuidade ao histórico entre execuções da rotina na nuvem, que sempre
+# começa do zero a partir do repositório — sem isso, cada rodada perderia
+# tudo que já tinha sido carregado antes)
 # Ambiente Python
 .venv/
 __pycache__/
