@@ -8,3 +8,6 @@ __pycache__/
 *.pyc
 # Exportações geradas
 exporta/saida/
+
+# Material de referência de formatação (não publicar — não é deste projeto)
+Formatacao/
