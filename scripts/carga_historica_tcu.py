@@ -47,7 +47,7 @@ def processa_ano(ano: int, forcar: bool = False) -> tuple[int, int]:
                 data_sessao=linha.get("DATASESSAO"),
                 assunto=linha.get("ASSUNTO"),
                 ementa=linha.get("SUMARIO") or linha.get("DECISAO"),
-                url=f"https://pesquisa.apps.tcu.gov.br/pesquisa/acordao-completo?doc={linha.get('KEY','')}",
+                url=f"https://pesquisa.apps.tcu.gov.br/redireciona/acordao-completo/{linha.get('KEY','')}",
                 temas=resultado.temas_encontrados,
                 data_coleta=agora,
             )
