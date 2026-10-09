@@ -1,0 +1,5 @@
+# Dependência extra só para o mapeamento histórico do STF via Corte Aberta
+# (scripts/mapeamento_stf_corte_aberta.py). Não é necessária para o TCU.
+#
+# Instalar com: .venv/bin/pip install -r requirements-stf.txt
+google-cloud-bigquery>=3.25
