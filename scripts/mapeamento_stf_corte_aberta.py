@@ -43,6 +43,13 @@ def main() -> None:
         default=os.environ.get("GOOGLE_CLOUD_PROJECT"),
         help="ID do projeto Google Cloud (ou defina GOOGLE_CLOUD_PROJECT)",
     )
+    ap.add_argument(
+        "--desde-ano",
+        type=int,
+        default=dt.date.today().year - 9,  # últimos 10 anos inclusive, ex: 2026 -> 2017
+        help="Só processos a partir deste ano (padrão: últimos 10 anos, igual ao TCU). "
+             "Use 2000 para o histórico completo do Corte Aberta.",
+    )
     args = ap.parse_args()
 
     if not args.project:
@@ -53,6 +60,7 @@ def main() -> None:
         )
 
     print(f"=== Mapeamento histórico STF (Corte Aberta) — projeto GCP: {args.project} ===")
+    print(f"Filtrando a partir de {args.desde_ano}.")
     print("Consultando basedosdados.br_stf_corte_aberta.decisoes (pode levar alguns minutos)...")
 
     total = 0
@@ -60,7 +68,7 @@ def main() -> None:
     agora = dt.datetime.now().isoformat(timespec="seconds")
 
     with conexao() as con:
-        for linha in consultar_decisoes(args.project):
+        for linha in consultar_decisoes(args.project, desde_ano=args.desde_ano):
             total += 1
             resultado = classifica(*texto_para_classificar(linha))
             if not resultado.eh_financas_publicas:

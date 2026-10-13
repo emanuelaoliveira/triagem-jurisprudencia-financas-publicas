@@ -32,18 +32,26 @@ COLUNAS = [
 ]
 
 
-def consultar_decisoes(project_id: str) -> Iterator[dict]:
-    """Consulta todas as linhas da tabela Corte Aberta (só as colunas que
-    usamos) e devolve um dict por linha. Requer `google-cloud-bigquery`
-    instalado e credenciais configuradas (gcloud auth application-default
-    login) — ver requirements-stf.txt e SETUP_STF_CORTE_ABERTA.md.
+def consultar_decisoes(project_id: str, desde_ano: int | None = None) -> Iterator[dict]:
+    """Consulta a tabela Corte Aberta (só as colunas que usamos) e devolve um
+    dict por linha. Se `desde_ano` for informado, filtra só processos daquele
+    ano em diante (reduz volume consultado/custo). Requer
+    `google-cloud-bigquery` instalado e credenciais configuradas (gcloud auth
+    application-default login) — ver requirements-stf.txt e
+    SETUP_STF_CORTE_ABERTA.md.
     """
     from google.cloud import bigquery  # import local: dependência opcional
 
     cliente = bigquery.Client(project=project_id)
     colunas_sql = ", ".join(COLUNAS)
     consulta = f"SELECT {colunas_sql} FROM `{TABELA}`"
-    resultado = cliente.query(consulta).result()
+    job_config = None
+    if desde_ano is not None:
+        consulta += " WHERE ano >= @desde_ano"
+        job_config = bigquery.QueryJobConfig(
+            query_parameters=[bigquery.ScalarQueryParameter("desde_ano", "INT64", desde_ano)]
+        )
+    resultado = cliente.query(consulta, job_config=job_config).result()
     for linha in resultado:
         yield dict(linha.items())
 
