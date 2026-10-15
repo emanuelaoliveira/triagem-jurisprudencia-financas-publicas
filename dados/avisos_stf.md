@@ -11,9 +11,10 @@ Marque com [x] as que já foram conferidas.
 
 ## Pendentes
 
+- [ ] 2026-10-14 — Informativo STF 1232/2026 — http://portal.stf.jus.br/textos/verTexto.asp?servico=informativoSTF
 - [ ] 2026-10-07 — Boletim Repercussão Geral em pauta nº 392 — http://portal.stf.jus.br/textos/verTexto.asp?servico=informativoSTF
 - [ ] 2026-10-06 — Informativo STF 1231/2026 — http://portal.stf.jus.br/textos/verTexto.asp?servico=informativoSTF
 - [ ] 2026-10-01 — Boletim Repercussão Geral em pauta nº 391 — http://portal.stf.jus.br/textos/verTexto.asp?servico=informativoSTF
 - [ ] 2026-09-29 — Informativo STF 1230/2026 — http://portal.stf.jus.br/textos/verTexto.asp?servico=informativoSTF
 
-<!-- última verificação do e-mail: 2026-10-12T00:00:00 — id mais recente visto: 1a113e6694eee854 -->
+<!-- última verificação do e-mail: 2026-10-15T00:00:00 — id mais recente visto: 1a137f74158859b5 -->
