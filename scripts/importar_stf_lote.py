@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from armazenamento.db import Decisao, conexao, salvar, contar
 from classificador.classificador import classifica
+from fetchers.stf_comum import url_busca_stf
 
 NOTA_RE = re.compile(r"\s*NOTA:.*$", re.DOTALL)
 
@@ -64,7 +65,7 @@ def importar(caminho_json: str) -> tuple[int, int]:
             numero = numero_m.group(1) if numero_m else None
             ano = item["julgamento"].split("/")[-1] if item.get("julgamento") else None
 
-            url = item.get("url") or item.get("acompanhamento")
+            url = item.get("url") or item.get("acompanhamento") or url_busca_stf(titulo)
 
             d = Decisao(
                 orgao="STF",

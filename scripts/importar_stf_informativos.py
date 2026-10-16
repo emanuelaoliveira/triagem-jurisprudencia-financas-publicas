@@ -30,6 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from armazenamento.db import Decisao, conexao, contar, salvar
 from classificador.classificador import classifica
+from fetchers.stf_comum import url_busca_stf
 
 
 def importar(caminho_xlsx: str, anos: int = 10, corte: dt.date | None = None) -> tuple[int, int, int]:
@@ -85,7 +86,7 @@ def importar(caminho_xlsx: str, anos: int = 10, corte: dt.date | None = None) ->
                 data_sessao=data_sessao.isoformat(),
                 assunto=titulo_curto,
                 ementa=ementa,
-                url=None,
+                url=url_busca_stf(titulo),
                 temas=resultado.temas_encontrados,
                 data_coleta=agora,
             )

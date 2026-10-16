@@ -224,6 +224,12 @@ function main() {
   });
 
   document.getElementById('btnNovoFiltro').addEventListener('click', () => {
+    busca.value = '';
+    filtroNumero.value = '';
+    selOrgao.value = '';
+    selTema.value = '';
+    anosSelecionados.clear();
+    anosChips.querySelectorAll('.ano-chip.selecionado').forEach(c => c.classList.remove('selecionado'));
     viewResultados.style.display = 'none';
     viewFiltros.style.display = '';
     window.scrollTo({ top: 0, behavior: 'smooth' });
