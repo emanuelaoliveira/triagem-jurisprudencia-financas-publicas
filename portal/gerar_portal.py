@@ -69,10 +69,11 @@ TEMPLATE_HTML = """<!doctype html>
   .section-title { font-size: 10px; font-weight: 700; color: var(--senado-blue); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
   .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  .barra { display: flex; gap: 10px; flex-wrap: wrap; position: sticky; top: 0; background: var(--surface); z-index: 5; }
-  .barra input, .barra select { padding: 8px 10px; border: 1.5px solid var(--border2); border-radius: var(--radius-md); font-size: 13px; font-family: var(--font); color: var(--text); background: #fff; }
-  .barra input[type=search] { flex: 1; min-width: 220px; }
+  .barra { display: flex; flex-direction: column; gap: 10px; background: var(--surface); }
+  .barra input, .barra select { width: 100%; padding: 8px 10px; border: 1.5px solid var(--border2); border-radius: var(--radius-md); font-size: 13px; font-family: var(--font); color: var(--text); background: #fff; }
   .barra input:focus, .barra select:focus { outline: none; border-color: var(--senado-blue-light); }
+  .campo { display: flex; flex-direction: column; gap: 4px; }
+  .campo label { font-size: 12px; color: var(--text2); font-weight: 600; }
 
   .contagem { color: var(--text3); font-size: 11px; margin: 0 0 10px; }
   .card { border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 10px; }
@@ -124,14 +125,26 @@ TEMPLATE_HTML = """<!doctype html>
   <form class="section" id="view-filtros">
     <p class="section-title">Filtrar</p>
     <div class="barra">
-      <input type="search" id="busca" placeholder="Buscar por palavra, relator...">
-      <input type="text" id="filtroNumero" placeholder="Número (ex: 1502/2026)" style="max-width:220px">
-      <select id="filtroOrgao"><option value="">Todos os órgãos</option></select>
-      <select id="filtroTema"><option value="">Todos os temas</option></select>
-    </div>
-    <div class="barra" style="margin-top:10px; flex-direction:column; align-items:flex-start; gap:8px">
-      <label style="font-size:12px; color:var(--text2)">Ano(s) — nada selecionado traz todos os anos:</label>
-      <div class="anos-chips" id="anosChips"></div>
+      <div class="campo">
+        <label for="busca">Palavra-chave:</label>
+        <input type="search" id="busca" placeholder="Buscar por palavra, relator...">
+      </div>
+      <div class="campo">
+        <label for="filtroNumero">Número:</label>
+        <input type="text" id="filtroNumero" placeholder="Número (ex: 1502/2026)">
+      </div>
+      <div class="campo">
+        <label for="filtroOrgao">Órgão:</label>
+        <select id="filtroOrgao"><option value="">Todos os órgãos</option></select>
+      </div>
+      <div class="campo">
+        <label for="filtroTema">Tema:</label>
+        <select id="filtroTema"><option value="">Todos os temas</option></select>
+      </div>
+      <div class="campo">
+        <label>Ano(s) — nada selecionado traz todos os anos:</label>
+        <div class="anos-chips" id="anosChips"></div>
+      </div>
     </div>
     <div style="margin-top:1.25rem; text-align:right">
       <button class="btn btn-primary" type="submit">Buscar decisões</button>
