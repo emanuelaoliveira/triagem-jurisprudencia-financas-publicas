@@ -22,6 +22,20 @@ from classificador.classificador import classifica
 from fetchers.tcu import ORGAO, baixar_csv_ano, iterar_acordaos_csv, texto_para_classificar
 
 
+def _data_sessao_iso(data_br: str | None) -> str | None:
+    """O CSV do TCU traz a data da sessão como "DD/MM/AAAA". Convertemos para
+    "AAAA-MM-DD" (igual ao STF) para que a ordenação por data no banco, no
+    Excel e no portal funcione corretamente entre os dois órgãos — comparar
+    como texto puro os dois formatos juntos bagunça a ordem (ex: "31/10/2023"
+    "vence" "2026-09-28" numa comparação de texto, mesmo sendo mais antigo)."""
+    if not data_br:
+        return None
+    try:
+        return dt.datetime.strptime(data_br, "%d/%m/%Y").date().isoformat()
+    except ValueError:
+        return data_br
+
+
 def processa_ano(ano: int, forcar: bool = False) -> tuple[int, int]:
     print(f"\n== TCU {ano} ==")
     caminho = baixar_csv_ano(ano, forcar=forcar)
@@ -44,7 +58,7 @@ def processa_ano(ano: int, forcar: bool = False) -> tuple[int, int]:
                 ano=linha.get("ANOACORDAO"),
                 colegiado=linha.get("COLEGIADO"),
                 relator=linha.get("RELATOR"),
-                data_sessao=linha.get("DATASESSAO"),
+                data_sessao=_data_sessao_iso(linha.get("DATASESSAO")),
                 assunto=linha.get("ASSUNTO"),
                 ementa=linha.get("SUMARIO") or linha.get("DECISAO"),
                 url=f"https://pesquisa.apps.tcu.gov.br/redireciona/acordao-completo/{linha.get('KEY','')}",
