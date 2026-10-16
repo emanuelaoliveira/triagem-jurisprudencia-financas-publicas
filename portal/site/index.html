@@ -45,6 +45,11 @@
   .ver-mais { font-size: 12px; color: var(--senado-blue-light); cursor: pointer; background: none; border: none; padding: 4px 0; font-family: var(--font); font-weight: 500; }
   .vazio { text-align: center; color: var(--text3); padding: 40px 0; font-size: 13px; }
 
+  .anos-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ano-chip { padding: 5px 12px; border: 1.5px solid var(--border2); border-radius: 14px; background: #fff; font-size: 12px; color: var(--text2); cursor: pointer; font-family: var(--font); }
+  .ano-chip:hover { border-color: var(--senado-blue-light); }
+  .ano-chip.selecionado { background: var(--senado-blue); border-color: var(--senado-blue); color: #fff; font-weight: 600; }
+
   .btn { padding: 9px 22px; border-radius: var(--radius-md); border: 0.5px solid var(--border2); background: transparent; color: var(--text); font-size: 13px; cursor: pointer; font-family: var(--font); font-weight: 500; transition: background 0.15s; }
   .btn:hover { background: var(--surface2); }
   .btn-primary { background: var(--senado-blue); color: #fff; border-color: var(--senado-blue); }
@@ -82,14 +87,9 @@
       <select id="filtroOrgao"><option value="">Todos os órgãos</option></select>
       <select id="filtroTema"><option value="">Todos os temas</option></select>
     </div>
-    <div class="barra" style="margin-top:10px">
-      <label style="font-size:12px; color:var(--text2); display:flex; align-items:center; gap:6px">
-        Período: de <input type="date" id="dataDe">
-      </label>
-      <label style="font-size:12px; color:var(--text2); display:flex; align-items:center; gap:6px">
-        até <input type="date" id="dataAte">
-      </label>
-      <button class="ver-mais" id="limparPeriodo" type="button">limpar período</button>
+    <div class="barra" style="margin-top:10px; flex-direction:column; align-items:flex-start; gap:8px">
+      <label style="font-size:12px; color:var(--text2)">Ano(s) — nada selecionado traz todos os anos:</label>
+      <div class="anos-chips" id="anosChips"></div>
     </div>
     <div style="margin-top:1.25rem; text-align:right">
       <button class="btn btn-primary" type="submit">Buscar decisões</button>
@@ -118,18 +118,6 @@ function main() {
   const info = JSON.parse(document.getElementById('dados-portal').textContent);
   const decisoes = info.decisoes;
 
-  // data_sessao vem como "DD/MM/AAAA" (TCU) — converte pra "AAAA-MM-DD" uma
-  // vez só, pra comparar com os campos <input type="date"> (que já usam esse
-  // formato) e pra ordenar/filtrar por período.
-  function paraISO(dataBR) {
-    if (!dataBR) return null;
-    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(dataBR.trim());
-    if (!m) return null;
-    const [, d, mes, a] = m;
-    return `${a}-${mes}-${d}`;
-  }
-  decisoes.forEach(d => { d._dataISO = paraISO(d.data_sessao); });
-
   document.getElementById('subtitulo').textContent =
     `${decisoes.length} decisões · atualizado em ${info.gerado_em}`;
 
@@ -151,11 +139,26 @@ function main() {
   const paginacao = document.getElementById('paginacao');
   const busca = document.getElementById('busca');
   const filtroNumero = document.getElementById('filtroNumero');
-  const dataDe = document.getElementById('dataDe');
-  const dataAte = document.getElementById('dataAte');
 
-  document.getElementById('limparPeriodo').addEventListener('click', () => {
-    dataDe.value = ''; dataAte.value = '';
+  const anosChips = document.getElementById('anosChips');
+  const anosSelecionados = new Set();
+  const anosDisponiveis = [...new Set(decisoes.map(d => d.ano).filter(Boolean))]
+    .sort((a, b) => b.localeCompare(a));
+  anosDisponiveis.forEach(ano => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'ano-chip';
+    chip.textContent = ano;
+    chip.addEventListener('click', () => {
+      if (anosSelecionados.has(ano)) {
+        anosSelecionados.delete(ano);
+        chip.classList.remove('selecionado');
+      } else {
+        anosSelecionados.add(ano);
+        chip.classList.add('selecionado');
+      }
+    });
+    anosChips.appendChild(chip);
   });
 
   // A primeira tela mostra só os filtros; os resultados (com paginação)
@@ -176,8 +179,6 @@ function main() {
     const numero = filtroNumero.value.trim().toLowerCase();
     const orgao = selOrgao.value;
     const tema = selTema.value;
-    const de = dataDe.value || null;
-    const ate = dataAte.value || null;
 
     filtradas = decisoes.filter(d => {
       if (orgao && d.orgao !== orgao) return false;
@@ -186,8 +187,7 @@ function main() {
         const alvoNumero = `${d.numero || ''} ${d.ano || ''} ${d.titulo || ''}`.toLowerCase();
         if (!alvoNumero.includes(numero)) return false;
       }
-      if (de && (!d._dataISO || d._dataISO < de)) return false;
-      if (ate && (!d._dataISO || d._dataISO > ate)) return false;
+      if (anosSelecionados.size > 0 && !anosSelecionados.has(d.ano)) return false;
       if (termo) {
         const alvo = `${d.titulo} ${d.relator} ${d.ementa} ${d.assunto}`.toLowerCase();
         if (!alvo.includes(termo)) return false;
