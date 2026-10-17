@@ -146,7 +146,8 @@ TEMPLATE_HTML = """<!doctype html>
         <div class="anos-chips" id="anosChips"></div>
       </div>
     </div>
-    <div style="margin-top:1.25rem; text-align:right">
+    <div style="margin-top:1.25rem; text-align:right; display:flex; justify-content:flex-end; gap:10px">
+      <button class="btn" id="btnLimparFiltros" type="button">Limpar filtros</button>
       <button class="btn btn-primary" type="submit">Buscar decisões</button>
     </div>
   </form>
@@ -223,13 +224,19 @@ function main() {
     aplicarFiltro();
   });
 
-  document.getElementById('btnNovoFiltro').addEventListener('click', () => {
+  function limparFiltros() {
     busca.value = '';
     filtroNumero.value = '';
     selOrgao.value = '';
     selTema.value = '';
     anosSelecionados.clear();
     anosChips.querySelectorAll('.ano-chip.selecionado').forEach(c => c.classList.remove('selecionado'));
+  }
+
+  document.getElementById('btnLimparFiltros').addEventListener('click', limparFiltros);
+
+  document.getElementById('btnNovoFiltro').addEventListener('click', () => {
+    limparFiltros();
     viewResultados.style.display = 'none';
     viewFiltros.style.display = '';
     window.scrollTo({ top: 0, behavior: 'smooth' });
